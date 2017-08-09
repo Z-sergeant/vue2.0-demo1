@@ -1,15 +1,12 @@
 <template>
   <div class="effect">
     <h1>{{ msg }}</h1>
-    <div class="content">
-         <ul class="item left">
-           <li v-for="val in pictures" class="pic">
-             <img :src="val" width="90%"/>
-           </li>
+    <div class="content" ref="contentZqs">
+         <ul class="item left" ref="ulLeft">
          </ul>
-         <ul class="item middle">
+         <ul class="item middle" ref="ulMiddle">
          </ul>
-         <ul class="item right">
+         <ul class="item right" ref="ulRight">
          </ul>
     </div>
   </div>
@@ -20,17 +17,50 @@
     data () {
       return {
         msg: '基于vue2.0的瀑布流效果',
-        pictures: []
+        pictures: [],
+        cols: []
       };
     },
     created () {
       this.$http.get('/api/pic').then((response) => {
         this.pictures = response.body.data;
-        console.log(this.pictures);
+        this.$nextTick(() => {
+          this.cols = this.$refs.contentZqs.children;
+          console.log(this.pictures);
+          this.initImg();
+        });
       });
     },
     methods: {
-
+       initImg: function () {
+         var count = 1;
+         console.log(count);
+         for (var i = 0; i < this.pictures.length; i++) {
+           var img = new Image();
+           img.src = this.pictures[i];
+           count++;
+           if (count === this.pictures.length) {
+              console.log(count);
+              this.createImg();
+           };
+         }
+       },
+       createImg: function () {
+         for (var i = 0; i < this.pictures.length; i++) {
+           var oImg = document.createElement('img');
+           oImg.src = this.pictures[i];
+           oImg.width = 200;
+           var minH = this.cols[0].offsetHeight;
+           var index = 0;
+           for (var j = 0; j < this.cols.length; j++) {
+             if (this.cols[j].offsetHeight < minH) {
+               minH = this.cols[j].offsetHeight;
+               index = j;
+             }
+           }
+           this.cols[index].appendChild(oImg);
+         }
+       }
     }
   };
 </script>
@@ -49,27 +79,13 @@
  .content{
    background-color: skyblue;
    width: 80%;
-   min-height: 200px;
    margin: 0 10%;
-   display: flex;
  }
   .item{
-    flex: 1;
-    padding: 5%;
+    width: 30%;
+    float: left;
   }
-  .left{
-    background-color: red;
-  }
-  .middle{
-    background-color: orange;
-  }
-  .right{
-    background-color: deepskyblue;
-  }
-  .pic{
-    background-color: #ccc;
-    border-radius: 5%;
-    padding: 5%;
-    margin:5%;
+  .item img{
+    vertical-align: bottom;
   }
 </style>
